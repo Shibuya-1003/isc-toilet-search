@@ -14,30 +14,34 @@ if ($conn->connect_error) {
     die("接続失敗： " . $conn->connect_error);
 }
 
-//POST確認ログ
-file_put_contents("log.txt", "---POST確認---\n". print_r($_POST, true), FILE_APPEND);
-
-//値を取り出す(配列が来た場合は先頭要素だけにする)
+//POSTを受け取る
 $no = isset($_POST["No"]) ? (is_array($_POST["No"]) ? $_POST["No"][0] : $_POST["No"]) : null;
 $time = isset($_POST["Time"]) ? (is_array($_POST["Time"]) ? $_POST["Time"][0] : $_POST["Time"]) : null; 
 $status = isset($_POST["Status"]) ? (is_array($_POST["Status"]) ? $_POST["Status"][0] : $_POST["Status"]) : null;
 $distance = isset($_POST["Distance"]) ? (is_array($_POST["Distance"]) ? $_POST["Distance"][0] : $_POST["Distance"]) : null;
 
-//ログ出力（確認用）
-file_put_contents("log.txt", "受信データ： No=$no, Time=$time, Status=$status, Distance=$distance\n", FILE_APPEND); 
+//SQLテンプレ
+$sql = "INSERT INTO sensor_test (`No`, `Time`, `Status`, `Distance`) VALUES (?, ?, ?, ?)";
 
-//必須チェック
-if($no === null || $time === null || $status === null) {
-    die("エラー: 必要なデータが送信されていません");
-}
+//プリペアドステートメントを準備
+$stmt = $conn->prepare($sql);
 
-//SQL実行
-$sql = "INSERT INTO sensor (`No`, `Time`, `Status`,`Distance`) VALUES ('$no', '$time', '$status','$distance')";
+if($stmt){
+    $stmt->bind_param("issi", $no, $time, $status, $distance);
 
-if ($conn->query($sql) === TRUE) {
+
+//実行する
+if($stmt->execute()){
     echo json_encode(["status" => "success"]);
 } else {
+    echo json_encode(["status" => "error", "message" => $stmt->error]);
+}
+
+//ステートメントを閉じる
+$stmt->close();
+}else{
     echo json_encode(["status" => "error", "message" => $conn->error]);
+
 }
 
 $conn->close();
