@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>トイレ利用状況</title>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+    <script src="https://unpkg.com/obniz@3.19.0/obniz.js"></script>
+
+
+    <script src="toire.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 90%;
+            max-width: 400px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-使用中 {
+            background-color: #ff6961;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-未使用 {
+            background-color: #77dd77;
+            color: white;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+
+            th,
+            td {
+                padding: 10px;
+            }
+        }
+    </style>
+
+    <script>
+        const sensorLabelMap = {
+            1: "7階男子個室01",
+            2: "7階男子個室02",
+            // 追加したい場所があればここにどんどん追加！
+        };
+        async function fetchData() {
+            try {
+                let response = await fetch("get_data.php");
+                if (!response.ok) throw new Error("データの取得に失敗しました");
+
+                let data = await response.json();
+                console.log("取得データ:", data);
+
+                if (!Array.isArray(data)) throw new Error("データ形式が不正です");
+
+                let table = "<table><tr><th>場所</th><th>状態</th></tr>";
+                data.forEach(row => {
+                    let label = sensorLabelMap[row.No] || `センサー${row.No}`;
+                    let statusClass = row.Status === "使用中" ? "status-使用中" : "status-未使用";
+                    table += `<tr>
+                    <td>${label}</td>
+                    <td class="${statusClass}">${row.Status}</td>
+                </tr>`;
+                });
+                table += "</table>";
+                document.getElementById("data").innerHTML = table;
+            } catch (error) {
+                console.error("エラー:", error.message);
+                document.getElementById("data").innerHTML = "<p>データの取得に失敗しました</p>";
+            }
+        }
+
+        setInterval(fetchData, 1000);
+    </script>
+</head>
+
+<body onload="fetchData()">
+
+    <h1>ISC穴場トイレサーチ(ホスト用)</h1>
+    <div id="data"></div>
+
+</body>
+
+</html>
