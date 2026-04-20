@@ -20,6 +20,15 @@ $time = isset($_POST["Time"]) ? (is_array($_POST["Time"]) ? $_POST["Time"][0] : 
 $status = isset($_POST["Status"]) ? (is_array($_POST["Status"]) ? $_POST["Status"][0] : $_POST["Status"]) : null;
 $distance = isset($_POST["Distance"]) ? (is_array($_POST["Distance"]) ? $_POST["Distance"][0] : $_POST["Distance"]) : null;
 
+
+$status = isset($_POST["Status"]) ? (is_array($_POST["Status"]) ? $_POST["Status"][0] : $_POST["Status"]) : null;
+
+$allowed_statuses = ["使用中", "未使用"];
+if (!in_array($status, $allowed_statuses)) {
+
+    die(json_encode(["status" => "error", "message" => "不正な値です"]));
+}
+
 //SQLテンプレ
 $sql = "INSERT INTO sensor_test (`No`, `Time`, `Status`, `Distance`) VALUES (?, ?, ?, ?)";
 
