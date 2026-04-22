@@ -2,10 +2,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-$host = "YOUR_HOST";
-$user = "YOUR_USER";
-$password = "YOUR_PASSWORD";
-$dbname = "YOUR_DBNAME";
+require_once 'db_config.php';
 
 $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error){
